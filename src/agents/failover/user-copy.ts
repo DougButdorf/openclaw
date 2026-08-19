@@ -339,6 +339,8 @@ export const GENERIC_EXTERNAL_RUN_FAILURE_TEXT =
   "⚠️ Something went wrong while processing your request. Please try again, or use /new to start a fresh session.";
 export const HEARTBEAT_EXTERNAL_RUN_FAILURE_TEXT =
   "⚠️ Heartbeat check failed before it could produce an update. The main chat session remains available.";
+const PROVIDER_BIOLOGICAL_RISK_ERROR_USER_MESSAGE =
+  "⚠️ The model provider blocked this turn because its biological-risk filter flagged the content. Your session and conversation context are still intact. Rephrase the request or select another approved model; /new is not required.";
 export const PROVIDER_CONVERSATION_STATE_ERROR_USER_MESSAGE =
   "⚠️ The model provider rejected the conversation state. Please try again, or use /new to start a fresh session.";
 const PROVIDER_RATE_LIMIT_OR_QUOTA_ERROR_USER_MESSAGE =
@@ -350,6 +352,7 @@ const PROVIDER_MODEL_UNAVAILABLE_USER_MESSAGE =
   "⚠️ The configured model is unavailable from the provider — it may have been renamed, retired, or is not offered on this account. This needs a config update (agents.defaults.model); retrying or starting a new session won't fix it.";
 
 const PROVIDER_REQUEST_COPY = {
+  "biological-risk": PROVIDER_BIOLOGICAL_RISK_ERROR_USER_MESSAGE,
   "quota-429": PROVIDER_RATE_LIMIT_OR_QUOTA_ERROR_USER_MESSAGE,
   "conversation-state": PROVIDER_CONVERSATION_STATE_ERROR_USER_MESSAGE,
   "provider-internal": PROVIDER_INTERNAL_ERROR_USER_MESSAGE,
@@ -374,6 +377,7 @@ function renderProviderRequestFailureCopy(params: {
 
 type ProviderRequestErrorCode =
   | "provider_authentication_error"
+  | "provider_biological_risk_filter_error"
   | "provider_conversation_state_error"
   | "provider_internal_error"
   | "provider_model_unavailable"
@@ -396,11 +400,13 @@ export function resolveProviderRequestFailureCopy(params: {
       ? "provider_authentication_error"
       : reason === "model_not_found"
         ? "provider_model_unavailable"
-        : params.facet === "quota-429"
-          ? "provider_rate_limit_or_quota_error"
-          : params.facet === "conversation-state"
-            ? "provider_conversation_state_error"
-            : "provider_internal_error";
+        : params.facet === "biological-risk"
+          ? "provider_biological_risk_filter_error"
+          : params.facet === "quota-429"
+            ? "provider_rate_limit_or_quota_error"
+            : params.facet === "conversation-state"
+              ? "provider_conversation_state_error"
+              : "provider_internal_error";
   return {
     code,
     userMessage,

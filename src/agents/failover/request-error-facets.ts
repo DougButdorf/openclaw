@@ -2,6 +2,7 @@ import { normalizeLowercaseStringOrEmpty } from "@openclaw/normalization-core/st
 import type { FailoverSignal } from "./signal.js";
 
 export type ProviderRequestFacet =
+  | "biological-risk"
   | "quota-429"
   | "conversation-state"
   | "provider-internal"
@@ -19,6 +20,10 @@ export function classifyProviderRequestFacets(signal: FailoverSignal): ProviderR
     /\b(?:(?:unexpected\s+status|http)\s*503|503\s+service unavailable)\b|["'](?:status|code)["']\s*:\s*503\b/iu.test(
       message,
     );
+  // Codex returns this stable prefix when its biological-risk policy blocks a turn.
+  if (lower.includes("this content was flagged for possible biological risk")) {
+    return "biological-risk";
+  }
   // Preserves provider quota/billing guidance for generic HTTP 429 failures.
   if (
     genericProviderError &&

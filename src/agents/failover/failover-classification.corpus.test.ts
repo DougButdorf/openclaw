@@ -190,6 +190,19 @@ describe("cross-layer drift (documents current behavior, see refactor-02)", () =
     });
   });
 
+  it("preserves biological-risk policy guidance without session-reset advice", () => {
+    const message =
+      "This content was flagged for possible biological risk. If this seems wrong, try rephrasing your request.";
+    const facet = classifyProviderRequestFacets({ message });
+
+    expect(facet).toBe("biological-risk");
+    expect(classifyReplyRequest({ message })).toMatchObject({
+      code: "provider_biological_risk_filter_error",
+      userMessage: expect.stringContaining("/new is not required"),
+      technicalMessage: message,
+    });
+  });
+
   it.each([
     {
       message: "ThrottlingException: Rate exceeded",
